@@ -49,7 +49,7 @@ overlayrootify_fstab() {
 	local hash="#" oline="" ospec="" upper="" dirs="" copy_opts=""
 	local spec file vfstype opts pass freq line ro_line
 	local workdir="" use_orig="" relfile="" needs_workdir=true
-	
+
 	[ -f "$input" ] || return 1
 
 	while read spec file vfstype opts pass freq; do
@@ -90,7 +90,9 @@ overlayrootify_fstab() {
 			else
 				echo "${line}"
 			fi
-		elif [ "$file" = "/" ]; then
+		elif [ "$file" = "/boot" ]; then
+			echo "${line}"
+		else
 			#ospec="${root_ro}${file}"
 			ospec="${fstype}"
 			copy_opts=""
@@ -119,25 +121,25 @@ overlayrootify_fstab() {
 				echo "$line"
 				[ "$file" = "/" ] && dirs="${dirs} ${upper}"
 			fi
-		else
-			echo "${line}"
 		fi
 	done < "$input"
 	_RET=${dirs# }
 }
 
 
-mkdir -p /run/sysroot || echo Fail create ro dir 
+mkdir -p /run/sysroot || echo Fail create ro dir
 mkdir -p /run/root-rw || echo Fail create rw dir
 
 [ -f $NEWROOT/etc/overlayroot.conf ] && . $NEWROOT/etc/overlayroot.conf
 
 # Silent fallback if no device specified on conf file
 [ -n "$overlayrootdevice" ] || return 1
+echo $overlayrootdevice | grep -q LABEL && overlayrootdevice=$(blkid -L ${overlayrootdevice##*:})
+echo $overlayrootdevice | grep -q UUID  && overlayrootdevice=$(blkid -U ${overlayrootdevice##*:})
 [ ! -b $overlayrootdevice ] && (echo Overlayroot device not found. Falling back to root device. && return 1)
 [ $? != 0 ] || return
 
-# Mount and/or format the ephemeral device 
+# Mount and/or format the ephemeral device
 mount $overlayrootdevice /run/root-rw || ((mkfs.xfs -f $overlayrootdevice && mount $overlayrootdevice /run/root-rw) || (echo Fail mount $overlayrootdevice. Falling back to root device. && return 1))
 [ $? = 0 ] || return
 

@@ -38,4 +38,9 @@ reboot
 ```
  ** this example the ephemeral device is /dev/xvdb
 
+ The overlay root device can also be specified whith its partition label that can be found whith *blkid* commnad
+```
+echo "overlayrootdevice=LABEL:overlaydev" >> /etc/overlayroot.conf
+```
+
 [1] https://www.kernel.org/doc/Documentation/filesystems/overlayfs.txt 
