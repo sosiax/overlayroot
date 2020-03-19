@@ -134,6 +134,8 @@ mkdir -p /run/root-rw || echo Fail create rw dir
 
 # Silent fallback if no device specified on conf file
 [ -n "$overlayrootdevice" ] || return 1
+echo $overlayrootdevice | grep -q LABEL && overlayrootdevice=$(blkid -L `echo $overlayrootdevice | cut -d ':' -f2`)
+echo $overlayrootdevice | grep -q UUID  && overlayrootdevice=$(blkid -U `echo $overlayrootdevice | cut -d ':' -f2`)
 [ ! -b $overlayrootdevice ] && (echo Overlayroot device not found. Falling back to root device. && return 1)
 [ $? != 0 ] || return
 
